@@ -95,6 +95,8 @@ void RustCodeContainer::produceInternal()
 
     // Global declarations
     tab(n, *fOut);
+    produceInfoFunctions(n +1, fOut, fNumInputs, fNumOutputs);
+    tab(n, *fOut);
     fCodeProducer.Tab(n);
     generateGlobalDeclarations(&fCodeProducer);
 
@@ -115,7 +117,6 @@ void RustCodeContainer::produceInternal()
 
     tab(n + 1, *fOut);
     tab(n + 1, *fOut);
-    produceInfoFunctions(n + 1, fKlassName, "&self", false, FunTyped::kDefault, &fCodeProducer);
 
     // Init
     // TODO
@@ -259,6 +260,8 @@ void RustCodeContainer::produceClass()
     }
 
     tab(n, *fOut);
+    produceInfoFunctions(n +1, fOut, fNumInputs, fNumOutputs);
+    tab(n, *fOut);
     *fOut << "#[cfg_attr(feature = \"default-boxed\", derive(default_boxed::DefaultBoxed))]";
     if (gGlobal->gReprC) {
         tab(n, *fOut);
@@ -329,7 +332,7 @@ void RustCodeContainer::produceClass()
     fCodeProducer.Tab(n + 1);
     generateGetSampleRate("get_sample_rate", "&self", false, false)->accept(&fCodeProducer);
 
-    produceInfoFunctions(n + 1, "", "&self", false, FunTyped::kDefault, &fCodeProducer);
+
 
     // Inits
 
@@ -480,15 +483,13 @@ void RustCodeContainer::produceMetadata(int n)
     *fOut << "}" << endl;
 }
 
-void RustCodeContainer::produceInfoFunctions(int tabs, const string& classname, const string& obj,
-                                             bool ismethod, FunTyped::FunAttribute funtype,
-                                             TextInstVisitor* producer)
+void RustCodeContainer::produceInfoFunctions(int n, std::ostream* fOut, int fNumInputs, int fNumOutputs)
 {
-    producer->Tab(tabs);
-    generateGetInputs(subst("get_num_inputs$0", classname), obj, false, funtype)
-        ->accept(&fCodeProducer);
-    generateGetOutputs(subst("get_num_outputs$0", classname), obj, false, funtype)
-        ->accept(&fCodeProducer);
+    tab(n, *fOut);
+    *fOut << "pub const num_inputs: usize = "  << fNumInputs <<";";
+    tab(n, *fOut);
+    *fOut << "pub const num_outputs: usize = " << fNumOutputs <<";";
+
 }
 
 void RustCodeContainer::produceParameterGetterSetter(int tabs, map<string, int> parameterLookup)

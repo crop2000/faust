@@ -242,18 +242,20 @@ class RustInstVisitor : public TextInstVisitor {
         std::string name = inst->fBufferName2;
 
         // Build pattern matching + if let line
-        *fOut << "let (";
-        for (int i = 0; i < inst->fChannels; ++i) {
-            if (i > 0) {
-                *fOut << ", ";
-            }
-            *fOut << name << i;
-        }
-        *fOut << ") = if let [";
+        // *fOut << "let (";
+        // for (int i = 0; i < inst->fChannels; ++i) {
+        //     if (i > 0) {
+        //         *fOut << ", ";
+        //     }
+        //     *fOut << name << i;
+        // }
+        // *fOut << ") = if let [";
+        *fOut << "let [";
         for (int i = 0; i < inst->fChannels; ++i) {
             *fOut << name << i << ", ";
         }
-        *fOut << "..] = " << name << " {";
+        *fOut << "..] = " << name << ";";
+        // *fOut << "..] = " << name << "{";
 
         // Build fixed size iterator variables
         fTab++;
@@ -276,29 +278,29 @@ class RustInstVisitor : public TextInstVisitor {
         }
 
         // Build return tuple
-        tab(fTab, *fOut);
-        *fOut << "(";
-        for (int i = 0; i < inst->fChannels; ++i) {
-            if (i > 0) {
-                *fOut << ", ";
-            }
-            *fOut << name << i;
-        }
-        *fOut << ")";
+        // tab(fTab, *fOut);
+        // *fOut << "(";
+        // for (int i = 0; i < inst->fChannels; ++i) {
+        //     if (i > 0) {
+        //         *fOut << ", ";
+        //     }
+        //     *fOut << name << i;
+        // }
+        // *fOut << ")";
 
         // Build else branch
-        fTab--;
-        tab(fTab, *fOut);
-        *fOut << "} else {";
+        // fTab--;
+        // tab(fTab, *fOut);
+        // *fOut << "} else {";
 
-        fTab++;
-        tab(fTab, *fOut);
-        *fOut << "panic!(\"wrong number of " << name << "\");";
+        // fTab++;
+        // tab(fTab, *fOut);
+        // *fOut << "panic!(\"wrong number of " << name << "\");";
 
         fTab--;
-        tab(fTab, *fOut);
-        *fOut << "};";
-        tab(fTab, *fOut);
+        // tab(fTab, *fOut);
+        // *fOut << "};";
+        // tab(fTab, *fOut);
     }
 
     virtual void visit(DeclareFunInst* inst)
