@@ -451,7 +451,9 @@ void global::reset()
     gGroupTaskSwitch = false;
     gFunTaskSwitch   = false;
 
-    gUIMacroSwitch = false;
+    gUIMacroSwitch    = false;
+    gRustNoTraitSwitch = false;
+
     gDumpNorm      = -1;
     gFTZMode       = 0;
     gRangeUI       = false;
@@ -1369,6 +1371,10 @@ bool global::processCmdline(int argc, const char* argv[])
 
         } else if (isCmd(argv[i], "-uim", "--user-interface-macros")) {
             gUIMacroSwitch = true;
+            i += 1;
+
+        } else if (isCmd(argv[i], "-rnt", "--rust-no-faustdsp-trait")) {
+            gRustNoTraitSwitch = true;
             i += 1;
 
         } else if (isCmd(argv[i], "-t", "--timeout") && (i + 1 < argc)) {

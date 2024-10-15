@@ -518,7 +518,9 @@ void RustCodeContainer::produceClass()
     tab(n, *fOut);
     *fOut << "}" << endl;
     tab(n, *fOut);
-    produceFaustDspBlob();
+    if (!gGlobal->gRustNoTraitSwitch) {
+        produceFaustDspBlob();
+    }
 }
 
 void RustCodeContainer::produceMetadata(int n)
