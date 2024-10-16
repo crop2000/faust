@@ -41,6 +41,8 @@ Output options:
 
   **-uim**      **--user-interface-macros**       add user interface macro definitions to the output code.
 
+  **-rnt**      **--rust-no-faustdsp-trait**      (Rust only) Don't generate FaustDsp traitimplmentation.
+
   **-xml**                                    generate an XML description file.
 
   **-json**                                   generate a JSON description file.
@@ -284,3 +286,4 @@ AUTHOR
 Copyright (C) 2002-2024, GRAME - Centre National de Creation Musicale.
 All rights reserved.
 
+make[1]: Leaving directory '/home/olaf/projects/rust/forks/faust/documentation/man'
