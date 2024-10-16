@@ -2116,6 +2116,10 @@ string global::printHelp()
          << "-uim      --user-interface-macros       add user interface macro definitions to the "
             "output code."
          << endl;
+    sstr << tab
+         << "-rnt      --rust-no-faustdsp-trait      (Rust only) Don't generate FaustDsp trait" 
+         "implmentation."
+         << endl;
     sstr << tab << "-xml                                    generate an XML description file."
          << endl;
     sstr << tab << "-json                                   generate a JSON description file."
