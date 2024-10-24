@@ -36,7 +36,7 @@ all: ir/rust/LPF.ir
 all: ir/rust/UITester.ir
 all: ir/rust/bandfilter.ir
 all: ir/rust/bargraph.ir
-all: ir/rust/bs.ir
+# all: ir/rust/bs.ir
 all: ir/rust/capture.ir
 all: ir/rust/carre_volterra.ir
 all: ir/rust/comb_bug_exp.ir
@@ -122,7 +122,7 @@ filesCompare:
 # rules
 ir/$(outdir)/%.ir: reference/%.ir
 	mkdir -p ir/$(outdir)
-	$(FAUST) -lang rust $(FAUSTOPTIONS) -i -A ../../architecture -a archs/rust/architecture.rs dsp/$*.dsp -o archs/rust/src/bin/$*.rs
+	$(FAUST) -lang rust $(FAUSTOPTIONS) -i -A ../../architecture dsp/$*.dsp -o archs/rust/src/bin/$*.rs
 	#cd archs/rust/ && cargo run --bin $* ../../$@
 	cd archs/rust/ && cargo run --release --bin $* ../../$@
 	$(COMPARE) $@ reference/$(notdir $@) $(precision)

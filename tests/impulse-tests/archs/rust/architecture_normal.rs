@@ -35,7 +35,6 @@ use std::io::Write;
 use std::env;
 
 use num_traits::{cast::FromPrimitive, float::Float};
-use default_boxed::DefaultBoxed;
 
 type F32 = f32;
 type F64 = f64;
@@ -111,7 +110,7 @@ pub struct ButtonUI
 
 impl ButtonUI
 {
-    fn set_button_parameters_to(&self, dsp: &mut Box<mydsp>, value: f64) {
+    fn set_button_parameters_to(&self, dsp: &mut dyn FaustDsp<T=f64>, value: f64) {
         for button_param in &self.all_button_params {
             dsp.set_param(*button_param, value);
         }
@@ -152,14 +151,17 @@ impl<T: Float + FromPrimitive> UI<T> for ButtonUI
 
 const SAMPLE_RATE: i32 = 44100;
 
-fn print_header(mut dsp: Box<mydsp>, num_total_samples: usize, output_file: &mut File) {
+type Dsp64 = dyn FaustDsp<T=f64>;
+
+fn print_header(mut dsp: Box<Dsp64>, num_total_samples: usize, output_file: &mut File) {
     dsp.init(SAMPLE_RATE);
-    writeln!(output_file, "number_of_inputs  : {}", FAUST_INPUTS).unwrap();
-    writeln!(output_file, "number_of_outputs : {}", FAUST_OUTPUTS).unwrap();
+    writeln!(output_file, "number_of_inputs  : {}", dsp.get_num_inputs()).unwrap();
+    writeln!(output_file, "number_of_outputs : {}", dsp.get_num_outputs()).unwrap();
     writeln!(output_file, "number_of_frames  : {}", num_total_samples).unwrap();
 }
 
-fn run_dsp(mut dsp: Box<mydsp>, num_samples: usize, line_num_offset: usize, output_file: &mut File) {
+fn run_dsp(mut dsp: Box<Dsp64>, num_samples: usize, line_num_offset: usize, output_file: &mut File) {
+    type T = <Dsp64 as FaustDsp>::T;
 
     // Generation constants
     let buffer_size = 64usize;
@@ -167,10 +169,12 @@ fn run_dsp(mut dsp: Box<mydsp>, num_samples: usize, line_num_offset: usize, outp
     // Init dsp
     dsp.init(SAMPLE_RATE);
 
+    let num_inputs = dsp.get_num_inputs() as usize;
+    let num_outputs = dsp.get_num_outputs() as usize;
 
     // Prepare buffers
-    let mut in_buffer = vec![vec![0 as FaustFloat; buffer_size]; FAUST_INPUTS];
-    let mut out_buffer = vec![vec![0 as FaustFloat; buffer_size]; FAUST_OUTPUTS];
+    let mut in_buffer = vec![vec![0 as T; buffer_size]; num_inputs];
+    let mut out_buffer = vec![vec![0 as T; buffer_size]; num_outputs];
 
     // Prepare UI
     let mut ui = ButtonUI{ all_button_params: Vec::new() };
@@ -184,7 +188,7 @@ fn run_dsp(mut dsp: Box<mydsp>, num_samples: usize, line_num_offset: usize, outp
         let buffer_size = buffer_size.min(num_samples - num_samples_written);
 
         // handle inputs
-        for c in 0..FAUST_INPUTS {
+        for c in 0..num_inputs {
             for j in 0..buffer_size {
                 let first_frame = num_samples_written == 0 && j == 0;
                 in_buffer[c][j] = if first_frame { 1.0 } else { 0.0 };
@@ -193,22 +197,21 @@ fn run_dsp(mut dsp: Box<mydsp>, num_samples: usize, line_num_offset: usize, outp
 
         // Set button state
         if cycle == 0 {
-            ui.set_button_parameters_to(&mut dsp, 1.0);
+            ui.set_button_parameters_to(&mut *dsp, 1.0);
         } else {
-            ui.set_button_parameters_to(&mut dsp, 0.0);
+            ui.set_button_parameters_to(&mut *dsp, 0.0);
         }
 
-        dsp.control();
         dsp.compute(
-            buffer_size,
-            in_buffer.iter().map(|buffer| buffer.as_slice()).collect::<Vec<&[FaustFloat]>>().as_slice(),
-            out_buffer.iter_mut().map(|buffer| buffer.as_mut_slice()).collect::<Vec<&mut [FaustFloat]>>().as_mut_slice(),
+            buffer_size as i32,
+            in_buffer.iter().map(|buffer| buffer.as_slice()).collect::<Vec<&[T]>>().as_slice(),
+            out_buffer.iter_mut().map(|buffer| buffer.as_mut_slice()).collect::<Vec<&mut [T]>>().as_mut_slice(),
         );
 
         // handle outputs
         for j in 0..buffer_size {
             write!(output_file, "{:6} :", num_samples_written + line_num_offset).unwrap();
-            for c in 0..FAUST_OUTPUTS {
+            for c in 0..num_outputs {
                 write!(output_file, " {:8.6}", out_buffer[c][j]).unwrap();
             }
             writeln!(output_file).unwrap();
@@ -219,6 +222,10 @@ fn run_dsp(mut dsp: Box<mydsp>, num_samples: usize, line_num_offset: usize, outp
     }
 }
 
+fn new_dsp() -> Box<Dsp64> {
+    use default_boxed::DefaultBoxed;
+    mydsp::default_boxed()
+}
 
 fn main() {
     let num_total_samples = 60000;
@@ -229,7 +236,12 @@ fn main() {
     let output_file_name = env::args().nth(1).expect("ERROR: Output file name expected.");
     let mut output_file = File::create(output_file_name).expect("Cannot create output file");
 
-    print_header(mydsp::default_boxed(), num_total_samples, &mut output_file);
+    print_header(new_dsp(), num_total_samples, &mut output_file);
 
-    run_dsp(mydsp::default_boxed(), block_size, 0, &mut output_file);
+    // Only test mono DSP for now
+    run_dsp(new_dsp(), block_size, 0, &mut output_file);
+
+    //run_dsp(new_dsp(), block_size, 1 * block_size, &mut output_file);
+    //run_dsp(new_dsp(), block_size, 2 * block_size, &mut output_file);
+    //run_dsp(new_dsp(), block_size, 3 * block_size, &mut output_file);
 }

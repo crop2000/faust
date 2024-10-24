@@ -362,13 +362,15 @@ interp1:
 #########################################################################
 # Rust backend
 rust:
-	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double"
+	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -ec -a archs/rust/architecture.rs"
 	rm -rf ir/rust
-	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -fp"
+	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -a archs/rust/architecture_normal.rs"
 	rm -rf ir/rust
-	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -vec -vs 4"
+	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -fp -a archs/rust/architecture_normal.rs"
 	rm -rf ir/rust
-	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -vec -vs 32"
+	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -vec -vs 4 -a archs/rust/architecture_normal.rs"
+	rm -rf ir/rust
+	$(MAKE) -f Make.rust FAUSTOPTIONS="-I dsp -double -vec -vs 32 -a archs/rust/architecture_normal.rs"
 
 #########################################################################
 # Cmajor backend
